@@ -148,7 +148,7 @@ class GroupsController < ApplicationController
                 column: headers[i],
                 error: true
               }, status: :unprocessable_entity
-            elif build_country_city_state_model && (!row_data[i].nil? || !row_data[i].empty?)
+            elsif build_country_city_state_model && (!row_data[i].nil? || !row_data[i].empty?)
               return render json: {
                 message: 'Filter data is filled',
                 row: idx,

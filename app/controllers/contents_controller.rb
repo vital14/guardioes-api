@@ -6,18 +6,18 @@ class ContentsController < ApplicationController
   def index
     @user = current_devise_user
 
-    case @user
+    @contents = case @user
       when current_group_manager
-        @contents = Content.where(group_manager_id: @user.id)
+        Content.where(group_manager_id: @user.id)
       when current_user
         if @user.group && @user.group.group_manager
-          @contents = Content.where(group_manager_id: @user.group.group_manager.id)
+          Content.where(group_manager_id: @user.group.group_manager.id)
         else
-          @contents = Content.where(app_id: @user.app_id).where(group_manager_id: nil)
-        end
+          Content.where(app_id: @user.app_id).where(group_manager_id: nil)
+                    end
       else
-        @contents = Content.where(app_id: @user.app_id)
-    end
+        Content.where(app_id: @user.app_id)
+                end
   
     render json: @contents
   end
