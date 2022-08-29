@@ -43,6 +43,7 @@ RSpec.describe FormAnswersController, type: :controller do
 
   describe "GET #index" do
     it "returns a success response" do
+      user = create(:user)
       form_answer = FormAnswer.create! valid_attributes
       get :index, params: {}, session: valid_session
       expect(response).to be_successful

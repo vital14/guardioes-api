@@ -58,17 +58,17 @@ class SurveysController < ApplicationController
       return render json: { message: "No data was found in given period:   #{begin_datetime} -> #{end_datetime}" }
     end
     respond_to do |format|
-      format.all { render json: { message: 'You must append \'.csv\' to the end of the url'} }
+      format.all { render json: { message: 'You must append \'.csv\' to the end of the url' } }
       format.csv { send_data to_csv_csv_data, filename: "surveys-#{begin_datetime}-#{end_datetime}.csv" }
     end
   end
 
   def all_surveys
     @surveys = Survey.all
-    
+
     render json: @surveys
   end
-  
+
   # GET /surveys/1
   def show
     render json: @survey
@@ -83,11 +83,11 @@ class SurveysController < ApplicationController
     past_surveys = Survey.filter_by_user(current_user.id).where("created_at >= ?", date).where(household: @survey.household)
 
     if past_surveys.length == 2
-      return render json: {errors: "The user already contributed two times today"}, status: :already_reported
+      return render json: { errors: "The user already contributed two times today" }, status: :already_reported
     elsif past_surveys[0] && past_surveys[0].symptom[0] && @survey.symptom[0]
-      return render json: {errors: "The user already contributed with this survey today"}, status: :already_reported
+      return render json: { errors: "The user already contributed with this survey today" }, status: :already_reported
     elsif past_surveys[0] && !past_surveys[0].symptom[0] && !@survey.symptom[0]
-      return render json: {errors: "The user already contributed with this survey today"}, status: :already_reported
+      return render json: { errors: "The user already contributed with this survey today" }, status: :already_reported
     end
 
     if @survey.save
@@ -141,69 +141,79 @@ class SurveysController < ApplicationController
     render json: json, root: 'surveys', each_serializer: SurveyForMapSerializer
   end
 
+  def count_symptoms
+    counter = Survey.where("symptom = ?", params[:symptom]).count
+    if counter > 0
+      "Você sentiu #{params[:symptom]} por #{counter} dias"
+    else
+      "Sintoma #{params[:symptom]} não encontrado"
+    end
+  end
+
   private
-    def to_csv_search_data
-      attributes = []
-      @surveys.first.search_data.each do |key, value|
-        attributes.append(key)
-      end
 
-      CSV.generate(headers: true) do |csv|
-        csv << attributes
-        @surveys.each do |survey|
-          csv << survey.search_data.map { |key, value| value.to_s }
-        end
-      end
+  def to_csv_search_data
+    attributes = []
+    @surveys.first.search_data.each do |key, value|
+      attributes.append(key)
     end
 
-    def to_csv_csv_data
-      attributes = []
-      @surveys.first.csv_data.each do |key, value|
-        attributes.append(key)
-      end
-
-      CSV.generate(headers: true) do |csv|
-        csv << attributes
-        @surveys.each do |survey|
-          csv << survey.csv_data.map { |key, value| value.to_s }
-        end
+    CSV.generate(headers: true) do |csv|
+      csv << attributes
+      @surveys.each do |survey|
+        csv << survey.search_data.map { |key, value| value.to_s }
       end
     end
+  end
 
-    def set_group
-      @group = Group.find(params[:id])
+  def to_csv_csv_data
+    attributes = []
+    @surveys.first.csv_data.each do |key, value|
+      attributes.append(key)
     end
 
-    # Use callbacks to share common setup or constraints between actions.
-    def set_survey
-      @survey = Survey.find(params[:id])
+    CSV.generate(headers: true) do |csv|
+      csv << attributes
+      @surveys.each do |survey|
+        csv << survey.csv_data.map { |key, value| value.to_s }
+      end
     end
+  end
 
-    def set_user
-      @user = User.find(current_user.id)
-    end
+  def set_group
+    @group = Group.find(params[:id])
+  end
 
-    # Only allow a trusted parameter "white list" through.
-    def survey_params
-      params.require(:survey).permit(
-        :user_id,
-        :household_id, 
-        :latitude, 
-        :longitude, 
-        :bad_since, 
-        :postal_code,
-        :street, 
-        :city, 
-        :state, 
-        :country,
-        :traveled_to,
-        :went_to_hospital,
-        :contact_with_symptom,
-        symptom: []
-      ) 
-    end
+  # Use callbacks to share common setup or constraints between actions.
+  def set_survey
+    @survey = Survey.find(params[:id])
+  end
 
-    def survey_update_params
-      params.require(:survey).permit(:reviewed)
-    end
+  def set_user
+    @user = User.find(current_user.id)
+  end
+
+  # Only allow a trusted parameter "white list" through.
+  def survey_params
+    params.require(:survey).permit(
+      :user_id,
+      :household_id,
+      :latitude,
+      :longitude,
+      :bad_since,
+      :postal_code,
+      :street,
+      :city,
+      :state,
+      :country,
+      :traveled_to,
+      :went_to_hospital,
+      :contact_with_symptom,
+      symptom: []
+    )
+  end
+
+  def survey_update_params
+    params.require(:survey).permit(:reviewed)
+  end
 end

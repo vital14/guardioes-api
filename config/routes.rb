@@ -39,6 +39,7 @@ Rails.application.routes.draw do
 
   #get "surveys/all_surveys", to: "surveys#all_surveys"
   get "surveys/group_cases", to: "surveys#group_cases"
+  get "surveys/count_symptoms", to: "surveys#count_symptoms"
   #get "surveys/week", to: "surveys#weekly_surveys"
   get "surveys/week", to: "surveys#limited_surveys"
   get "surveys/render_without_user", to: "surveys#render_without_user"
